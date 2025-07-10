@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Kay - AI Medical Tutor</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.js"></script>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <nav class="medical-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-user-md"></i>
+                <span>Dr. Kay</span>
+                <span class="subtitle">AI Medical Tutor</span>
+            </div>
+            <div class="nav-actions">
+                <button id="startSession" class="btn btn-primary">
+                    <i class="fas fa-video"></i> Talk to Dr. Kay
+                </button>
+                <button id="medicalMode" class="btn btn-secondary">
+                    <i class="fas fa-stethoscope"></i> Medical Mode
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Interface -->
+    <div class="main-container">
+        <!-- Dr. Kay Video Widget -->
+        <div id="drKayWidget" class="dr-kay-widget hidden">
+            <div class="widget-header">
+                <div class="avatar-container">
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="widget-info">
+                    <h3>Dr. Kay</h3>
+                    <p class="status-text">Ready to help</p>
+                </div>
+                <div class="widget-controls">
+                    <button id="toggleVideo" class="control-btn" title="Toggle Video">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button id="toggleAudio" class="control-btn" title="Toggle Audio">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="minimizeWidget" class="control-btn" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <button id="closeWidget" class="control-btn" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="video-container">
+                <video id="participantVideo" autoplay muted></video>
+                <video id="localVideo" autoplay muted class="local-video"></video>
+                
+                <!-- Voice Activity Indicator -->
+                <div id="voiceIndicator" class="voice-indicator">
+                    <div class="wave-container">
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                        <div class="wave"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Transcript Sidebar -->
+            <div id="chatSidebar" class="chat-sidebar">
+                <div class="chat-header">
+                    <h4><i class="fas fa-comments"></i> Conversation</h4>
+                    <button id="toggleChat" class="toggle-chat">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <div class="chat-messages" id="chatMessages">
+                    <div class="message system">
+                        <div class="message-content">
+                            <p><strong>Dr. Kay:</strong> Hello! I'm Dr. Kay, your AI medical tutor. How can I help you today?</p>
+                            <span class="timestamp">Just now</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chatInput" placeholder="Type your question..." />
+                    <button id="sendMessage">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area">
+            <!-- Educational Disclaimer -->
+            <div class="disclaimer-banner">
+                <i class="fas fa-info-circle"></i>
+                <span>Dr. Kay is an educational assistant. Always consult real healthcare providers for medical care.</span>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <h2>Medical Education Tools</h2>
+                <div class="action-grid">
+                    <div class="action-card" onclick="openQuizGenerator()">
+                        <i class="fas fa-question-circle"></i>
+                        <h3>Generate Quiz</h3>
+                        <p>Create MBChB-style questions on any medical topic</p>
+                    </div>
+                    <div class="action-card" onclick="openStudyPlanner()">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>Study Plan</h3>
+                        <p>Get personalized study schedules for medical specialties</p>
+                    </div>
+                    <div class="action-card" onclick="openCalculators()">
+                        <i class="fas fa-calculator"></i>
+                        <h3>Medical Calculators</h3>
+                        <p>GFR, BMI, drug dosages, and more</p>
+                    </div>
+                    <div class="action-card" onclick="openSymptomChecker()">
+                        <i class="fas fa-search"></i>
+                        <h3>Symptom Analysis</h3>
+                        <p>Educational differential diagnosis learning</p>
+                    </div>
+                    <div class="action-card" onclick="openDocumentAnalyzer()">
+                        <i class="fas fa-file-medical"></i>
+                        <h3>Document Analysis</h3>
+                        <p>Analyze medical PDFs, images, and research papers</p>
+                    </div>
+                    <div class="action-card" onclick="openResearchSearch()">
+                        <i class="fas fa-microscope"></i>
+                        <h3>Research Search</h3>
+                        <p>Find current medical research and guidelines</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specialty Focus Areas -->
+            <div class="specialty-section">
+                <h2>Medical Specialties</h2>
+                <div class="specialty-grid">
+                    <button class="specialty-btn" data-specialty="obgyn">
+                        <i class="fas fa-female"></i>
+                        <span>OBGYN</span>
+                    </button>
+                    <button class="specialty-btn" data-specialty="internal">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Internal Medicine</span>
+                    </button>
+                    <button class="specialty-btn" data-specialty="pediatrics">
+                        <i class="fas fa-baby"></i>
+                        <span>Pediatrics</span>
+                    </button>
+                    <button class="specialty-btn" data-specialty="pharmacology">
+                        <i class="fas fa-pills"></i>
+                        <span>Pharmacology</span>
+                    </button>
+                    <button class="specialty-btn" data-specialty="cardiology">
+                        <i class="fas fa-heart"></i>
+                        <span>Cardiology</span>
+                    </button>
+                    <button class="specialty-btn" data-specialty="emergency">
+                        <i class="fas fa-ambulance"></i>
+                        <span>Emergency Medicine</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals for Tools -->
+    <div id="toolModal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Medical Tool</h3>
+                <button id="closeModal" class="close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wake Word Detection -->
+    <div id="wakeWordIndicator" class="wake-word-indicator hidden">
+        <i class="fas fa-microphone-alt"></i>
+        <span>Listening for "Hey Dr. Kay"...</span>
+    </div>
+
+    <!-- LiveKit Configuration -->
+    <script>
+        window.livekitConfig = {
+            url: "{{ livekit_url }}",
+            apiKey: "{{ livekit_api_key }}"
+        };
+    </script>
+    
+    <!-- Application Scripts -->
+    <script src="/static/js/livekit-integration.js"></script>
+    <script src="/static/js/medical-tools.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

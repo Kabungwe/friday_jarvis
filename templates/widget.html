@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dr. Kay Widget</title>
+    <style>
+        /* Embedded Widget Styles - Minimal and self-contained */
+        .dr-kay-embed {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .widget-launcher {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .widget-launcher:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.4);
+        }
+        
+        .widget-expanded {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            transform: scale(0);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        .widget-expanded.active {
+            transform: scale(1);
+            opacity: 1;
+        }
+        
+        .widget-header {
+            background: linear-gradient(135deg, #0066cc, #004499);
+            color: white;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .widget-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .widget-title h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .widget-title .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .widget-controls {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 6px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .widget-content {
+            height: calc(100% - 80px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .video-section {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .avatar-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0066cc, #004499);
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 32px;
+            position: relative;
+        }
+        
+        .status-dot {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            width: 16px;
+            height: 16px;
+            background: #28a745;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        
+        .quick-actions {
+            padding: 16px;
+            flex-grow: 1;
+        }
+        
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .action-btn:hover {
+            background: #e9ecef;
+            border-color: #0066cc;
+        }
+        
+        .action-btn i {
+            color: #0066cc;
+            font-size: 16px;
+            width: 20px;
+        }
+        
+        .disclaimer {
+            padding: 12px 16px;
+            background: #fff3cd;
+            border-top: 1px solid #ffeaa7;
+            font-size: 12px;
+            color: #856404;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Chat Interface */
+        .chat-interface {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .chat-messages {
+            flex-grow: 1;
+            padding: 16px;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 85%;
+        }
+        
+        .message.user {
+            background: #0066cc;
+            color: white;
+            margin-left: auto;
+        }
+        
+        .message.assistant {
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .chat-input {
+            padding: 16px;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .chat-input input {
+            flex-grow: 1;
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 20px;
+            outline: none;
+        }
+        
+        .chat-input button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/livekit-client/dist/livekit-client.umd.js"></script>
+</head>
+<body>
+    <div class="dr-kay-embed">
+        <!-- Widget Launcher Button -->
+        <button id="widgetLauncher" class="widget-launcher" title="Talk to Dr. Kay">
+            <i class="fas fa-user-md"></i>
+        </button>
+        
+        <!-- Expanded Widget -->
+        <div id="widgetExpanded" class="widget-expanded">
+            <div class="widget-header">
+                <div class="widget-title">
+                    <div>
+                        <h3>Dr. Kay</h3>
+                        <div class="subtitle">AI Medical Tutor</div>
+                    </div>
+                </div>
+                <div class="widget-controls">
+                    <button class="control-btn" id="toggleWidgetAudio" title="Toggle Audio">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="control-btn" id="toggleWidgetVideo" title="Toggle Video">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="control-btn" id="minimizeWidget" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="widget-content">
+                <!-- Default View -->
+                <div id="defaultView" class="default-view">
+                    <div class="video-section">
+                        <div class="avatar-container">
+                            <i class="fas fa-user-md"></i>
+                            <div class="status-dot"></div>
+                        </div>
+                        <h4>Dr. Kay is ready</h4>
+                        <p style="margin: 0; font-size: 14px; color: #6c757d;">Click to start voice/video session</p>
+                    </div>
+                    
+                    <div class="quick-actions">
+                        <button class="action-btn" onclick="startVoiceSession()">
+                            <i class="fas fa-microphone"></i>
+                            <div>
+                                <div style="font-weight: 600;">Start Voice Chat</div>
+                                <div style="font-size: 12px; color: #6c757d;">Talk to Dr. Kay</div>
+                            </div>
+                        </button>
+                        
+                        <button class="action-btn" onclick="startVideoSession()">
+                            <i class="fas fa-video"></i>
+                            <div>
+                                <div style="font-weight: 600;">Start Video Call</div>
+                                <div style="font-size: 12px; color: #6c757d;">See and talk to Dr. Kay</div>
+                            </div>
+                        </button>
+                        
+                        <button class="action-btn" onclick="quickQuiz()">
+                            <i class="fas fa-question-circle"></i>
+                            <div>
+                                <div style="font-weight: 600;">Quick Quiz</div>
+                                <div style="font-size: 12px; color: #6c757d;">Generate practice questions</div>
+                            </div>
+                        </button>
+                        
+                        <button class="action-btn" onclick="medicalCalc()">
+                            <i class="fas fa-calculator"></i>
+                            <div>
+                                <div style="font-weight: 600;">Medical Calculator</div>
+                                <div style="font-size: 12px; color: #6c757d;">GFR, BMI, dosages</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Interface (Hidden initially) -->
+                <div id="chatView" class="chat-interface hidden">
+                    <div class="chat-messages" id="widgetChatMessages">
+                        <div class="message assistant">
+                            Hello! I'm Dr. Kay, your AI medical tutor. How can I help you today?
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="widgetChatInput" placeholder="Ask Dr. Kay..." />
+                        <button id="widgetSendMessage">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Video Interface (Hidden initially) -->
+                <div id="videoView" class="video-interface hidden">
+                    <video id="widgetParticipantVideo" autoplay muted style="width: 100%; height: 200px; object-fit: cover;"></video>
+                    <video id="widgetLocalVideo" autoplay muted style="position: absolute; bottom: 10px; right: 10px; width: 80px; height: 60px; border-radius: 8px;"></video>
+                </div>
+            </div>
+            
+            <div class="disclaimer">
+                <i class="fas fa-info-circle"></i>
+                For educational purposes only. Consult healthcare providers for medical advice.
+            </div>
+        </div>
+    </div>
+
+    <!-- LiveKit Configuration -->
+    <script>
+        window.livekitConfig = {
+            url: "{{ livekit_url }}",
+            apiKey: "{{ livekit_api_key }}"
+        };
+        
+        // Widget State Management
+        let widgetState = {
+            expanded: false,
+            mode: 'default', // 'default', 'chat', 'video'
+            connected: false
+        };
+        
+        // Widget Launcher
+        document.getElementById('widgetLauncher').addEventListener('click', function() {
+            toggleWidget();
+        });
+        
+        document.getElementById('minimizeWidget').addEventListener('click', function() {
+            toggleWidget();
+        });
+        
+        function toggleWidget() {
+            const launcher = document.getElementById('widgetLauncher');
+            const expanded = document.getElementById('widgetExpanded');
+            
+            widgetState.expanded = !widgetState.expanded;
+            
+            if (widgetState.expanded) {
+                launcher.style.display = 'none';
+                expanded.classList.add('active');
+            } else {
+                launcher.style.display = 'flex';
+                expanded.classList.remove('active');
+            }
+        }
+        
+        function startVoiceSession() {
+            switchToMode('chat');
+            // Initialize LiveKit audio connection
+            initializeLiveKit(false); // Audio only
+        }
+        
+        function startVideoSession() {
+            switchToMode('video');
+            // Initialize LiveKit video connection
+            initializeLiveKit(true); // Audio + Video
+        }
+        
+        function switchToMode(mode) {
+            // Hide all views
+            document.getElementById('defaultView').classList.add('hidden');
+            document.getElementById('chatView').classList.add('hidden');
+            document.getElementById('videoView').classList.add('hidden');
+            
+            // Show target view
+            if (mode === 'chat') {
+                document.getElementById('chatView').classList.remove('hidden');
+            } else if (mode === 'video') {
+                document.getElementById('videoView').classList.remove('hidden');
+            } else {
+                document.getElementById('defaultView').classList.remove('hidden');
+            }
+            
+            widgetState.mode = mode;
+        }
+        
+        function quickQuiz() {
+            // Integration with quiz generator API
+            fetch('/api/quiz-generator?topic=general&num_questions=3')
+                .then(response => response.json())
+                .then(data => {
+                    addChatMessage('assistant', 'I\'ve generated 3 quick questions for you! Let\'s start with the first one...');
+                    switchToMode('chat');
+                })
+                .catch(error => {
+                    console.error('Quiz generation error:', error);
+                });
+        }
+        
+        function medicalCalc() {
+            addChatMessage('assistant', 'I can help with medical calculations! What would you like to calculate? (GFR, BMI, drug dosage, etc.)');
+            switchToMode('chat');
+        }
+        
+        function addChatMessage(sender, message) {
+            const chatMessages = document.getElementById('widgetChatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Chat input handling
+        document.getElementById('widgetSendMessage').addEventListener('click', sendChatMessage);
+        document.getElementById('widgetChatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+        
+        function sendChatMessage() {
+            const input = document.getElementById('widgetChatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                input.value = '';
+                
+                // Simulate Dr. Kay response (replace with actual LiveKit integration)
+                setTimeout(() => {
+                    addChatMessage('assistant', 'Thank you for your question! Let me help you with that...');
+                }, 1000);
+            }
+        }
+        
+        // LiveKit Integration (Simplified for widget)
+        function initializeLiveKit(enableVideo) {
+            console.log('Initializing LiveKit with video:', enableVideo);
+            widgetState.connected = true;
+            
+            // Add connection status indicator
+            const statusDot = document.querySelector('.status-dot');
+            if (statusDot) {
+                statusDot.style.background = '#28a745'; // Green for connected
+            }
+        }
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            if (widgetState.connected) {
+                // Cleanup LiveKit connection
+            }
+        });
+    </script>
+</body>
+</html>

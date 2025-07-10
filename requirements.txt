@@ -8,3 +8,13 @@ duckduckgo-search
 langchain_community
 requests
 python-dotenv
+fastapi
+uvicorn
+websockets
+aiofiles
+jinja2
+python-multipart
+Pillow
+PyPDF2
+openpyxl
+markdown
